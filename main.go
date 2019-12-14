@@ -33,7 +33,7 @@ func handleEmoji(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("Emoji type is not supported"))
+	fmt.Fprintf(w, "Emoji type %s is not supported", typ)
 }
 
 func pos(n int, offset int) (x int, y int) {

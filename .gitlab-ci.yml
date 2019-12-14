@@ -4,5 +4,19 @@ build:
   stage: build
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY/oon/calendar .
-    - docker push $CI_REGISTRY/oon/calendar
+    - docker build -t $CI_REGISTRY/oon/calendar:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY/oon/calendar:$CI_COMMIT_SHA
+
+deploy:
+  stage: deploy
+  script:
+    - /snap/bin/microk8s.kubectl set image deployment/calendar calendar=$CI_REGISTRY/oon/calendar:$CI_COMMIT_SHA
+
+  needs: ["build"]
+
+  only:
+    - master
+
+stages:
+  - build
+  - deploy
