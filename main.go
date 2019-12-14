@@ -47,7 +47,7 @@ func parseDate(date string) (month string, day int, days int, offset int, err er
 	formats := []string{
 		"2006-01-02",
 		"01-02",
-		"Jan 02",
+		"2006 Jan 2",
 		"Jan 2",
 	}
 
@@ -87,16 +87,16 @@ func makeAppleEmoji(w io.Writer, date string) error {
 		return err
 	}
 
-	width := 100
-	height := 100
 	canvas := svg.New(w)
-	canvas.Start(width, height)
+	canvas.Startpercent(100, 100, "viewBox='0 0 100 100'", "preserveAspectRatio='none'")
 
-	topRectPath := "M 0 0 l 0 38 l 100 0 l 0 -38"
-	topRectPath += "l -27 0 l -0.5 1 l 1 1 l -1.5 0.5 l 0.5 1.5 a 6 6 0 1 1 -3 3 l -1 -1 l -2 1 l 1.5 -1.5 l -1 -2 l -3 0 l 3 -1 l 0.5 -2.5"
-	topRectPath += "L 24 0 l 0 4 a 6 6 0 1 1 -4 0 l 0 -4"
+	topRectPath := Path{}.MoveTo(0, 0).Ver(38).Hor(100).Ver(-38)
+	topRectPath = topRectPath.Hor(-27).Line(-0.5, 1).Line(1, 1).Line(-1.5, 0.5).Line(0.5, 1.5)
+	topRectPath = topRectPath.Arc(6, 6, -3, 3, -45, true, true)
+	topRectPath = topRectPath.Line(-1, -1).Line(-2, 1).Line(1.5, -1.5).Line(-1, -2).Line(-3, 0).Line(3, -1).Line(0.5, -2.5)
+	topRectPath = topRectPath.HorTo(24).Ver(4).Arc(6, 6, -4, 0, 0, true, true).Ver(-4)
 
-	canvas.Path(topRectPath, "fill:rgb(169,95,95)")
+	canvas.Path(topRectPath.String(), "fill:rgb(169,95,95)")
 	canvas.Rect(0, 38, 100, 72, "fill:rgb(220,220,220)")
 
 	canvas.Text(5, 34, month, "font-family:'Super Rad', sans-serif;fill:rgb(225,225,225);font-size:20px")
