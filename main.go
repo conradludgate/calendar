@@ -36,10 +36,9 @@ func handleEmoji(w http.ResponseWriter, r *http.Request) {
 }
 
 func pos(n int, offset int) (x int, y int) {
-	x, y = 63, 21
 	pos := n + offset - 1
-	x += (pos % 7) * 5
-	y += (pos / 7) * 3
+	x = (pos % 7) * 20
+	y = (pos / 7) * 12
 	return
 }
 
@@ -88,25 +87,32 @@ func makeAppleEmoji(w io.Writer, date string) error {
 	}
 
 	canvas := svg.New(w)
-	canvas.Startpercent(100, 100, "viewBox='0 0 100 100'", "preserveAspectRatio='none'")
 
-	topRectPath := Path{}.MoveTo(0, 0).Ver(38).Hor(100).Ver(-38)
-	topRectPath = topRectPath.Hor(-27).Line(-0.5, 1).Line(1, 1).Line(-1.5, 0.5).Line(0.5, 1.5)
-	topRectPath = topRectPath.Arc(6, 6, -3, 3, -45, true, true)
-	topRectPath = topRectPath.Line(-1, -1).Line(-2, 1).Line(1.5, -1.5).Line(-1, -2).Line(-3, 0).Line(3, -1).Line(0.5, -2.5)
-	topRectPath = topRectPath.HorTo(24).Ver(4).Arc(6, 6, -4, 0, 0, true, true).Ver(-4)
+	canvas.Startpercent(100, 100, "viewBox='0 0 200 200'", "preserveAspectRatio='none'")
+
+	canvas.Gid("background")
+
+	topRectPath := Path{}.MoveTo(0, 0).Ver(76).Hor(200).Ver(-76)
+	topRectPath = topRectPath.Hor(-54).Line(-1, 2).Line(2, 2).Line(-3, 1).Line(1, 3)
+	topRectPath = topRectPath.Arc(12, 12, -6, 6, -45, true, true)
+	topRectPath = topRectPath.Line(-2, -2).Line(-4, 2).Line(3, -3).Line(-2, -4).Line(-6, 0).Line(6, -2).Line(1, -5)
+	topRectPath = topRectPath.HorTo(48).Ver(8).Arc(12, 12, -8, 0, 0, true, true).Ver(-8)
 
 	canvas.Path(topRectPath.String(), "fill:rgb(169,95,95)")
-	canvas.Rect(0, 38, 100, 72, "fill:rgb(220,220,220)")
+	canvas.Rect(0, 76, 200, 144, "fill:rgb(220,220,220)")
 
-	canvas.Text(5, 34, month, "font-family:'Super Rad', sans-serif;fill:rgb(225,225,225);font-size:20px")
+	canvas.Gend()
 
+	canvas.Text(10, 68, month, "font-family:'Super Rad', sans-serif;fill:rgb(225,225,225);font-size:40px")
+
+	canvas.Group("id='month_view'", "transform='translate(126, 42) scale(0.5)'")
 	for i := 1; i <= days; i++ {
 		x, y := pos(i, offset)
-		canvas.Text(x, y, strconv.Itoa(i), "font-family:'Super Rad', sans-serif; fill:rgb(225,225,225); font-size: 2px;text-anchor:end")
+		canvas.Text(x, y, strconv.Itoa(i), "font-family:'Super Rad', sans-serif; fill:rgb(225,225,225); font-size: 8px;text-anchor:end")
 	}
+	canvas.Gend()
 
-	canvas.Text(50, 85, strconv.Itoa(day), "font-family:sans-serif;fill:rgb(0,0,0);font-size:50px;text-anchor:middle")
+	canvas.Text(100, 170, strconv.Itoa(day), "font-family:sans-serif;fill:rgb(0,0,0);font-size:100px;text-anchor:middle")
 
 	canvas.End()
 
