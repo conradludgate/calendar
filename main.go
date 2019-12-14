@@ -22,34 +22,17 @@ func handleEmoji(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.URL)
 
 	typ := r.FormValue("emoji")
-	day, err := strconv.Atoi(r.FormValue("day"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Day was not a valid number"))
-		return
-	}
-	month, err := strconv.Atoi(r.FormValue("month"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Month was not a valid number"))
-		return
-	}
-	year, err := strconv.Atoi(r.FormValue("year"))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Year was not a valid number"))
-		return
-	}
-	if year == 0 {
-		year = time.Now().Year()
-	}
+	date := r.FormValue("date")
 
 	if typ == "apple" {
-		makeAppleEmoji(w, day, time.Month(month), year)
+		if err := makeAppleEmoji(w, date); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Date is not supported. Error %s", err.Error())
+		}
 		return
 	}
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("Type is not supported"))
+	w.Write([]byte("Emoji type is not supported"))
 }
 
 func pos(n int, offset int) (x int, y int) {
@@ -60,18 +43,50 @@ func pos(n int, offset int) (x int, y int) {
 	return
 }
 
-func parseDate(m time.Month, day int, year int) (month string, days int, offset int) {
-	month = strings.ToUpper(m.String()[:3])
-	t := time.Date(year, m, day, 0, 0, 0, 0, time.UTC)
+func parseDate(date string) (month string, day int, days int, offset int, err error) {
+	formats := []string{
+		"2006-01-02",
+		"01-02",
+		"Jan 02",
+		"Jan 2",
+	}
+
+	date = strings.Replace(date, "+", " ", -1)
+
+	var t time.Time
+	fail := true
+	for _, format := range formats {
+		t, err = time.Parse(format, date)
+		if err == nil {
+			fail = false
+			break
+		}
+	}
+	if fail {
+		return
+	}
+
+	if t.Year() == 0 {
+		t = t.AddDate(time.Now().Year(), 0, 0)
+	}
+
+	day = t.Day()
+	month = strings.ToUpper(t.Month().String()[:3])
+	year := t.Year()
 	offset = (int(t.Weekday()) + 35 - day) % 7
-	days = []int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}[m-1]
+	days = []int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}[t.Month()-1]
 	if days == 28 && year%4 == 0 && (year%100 != 0 || year%400 == 0) {
 		days++
 	}
 	return
 }
 
-func makeAppleEmoji(w io.Writer, day int, mon time.Month, year int) {
+func makeAppleEmoji(w io.Writer, date string) error {
+	month, day, days, offset, err := parseDate(date)
+	if err != nil {
+		return err
+	}
+
 	width := 100
 	height := 100
 	canvas := svg.New(w)
@@ -84,8 +99,6 @@ func makeAppleEmoji(w io.Writer, day int, mon time.Month, year int) {
 	canvas.Path(topRectPath, "fill:rgb(169,95,95)")
 	canvas.Rect(0, 38, 100, 72, "fill:rgb(220,220,220)")
 
-	month, days, offset := parseDate(mon, day, year)
-
 	canvas.Text(5, 34, month, "font-family:'Super Rad', sans-serif;fill:rgb(225,225,225);font-size:20px")
 
 	for i := 1; i <= days; i++ {
@@ -96,4 +109,6 @@ func makeAppleEmoji(w io.Writer, day int, mon time.Month, year int) {
 	canvas.Text(50, 85, strconv.Itoa(day), "font-family:sans-serif;fill:rgb(0,0,0);font-size:50px;text-anchor:middle")
 
 	canvas.End()
+
+	return nil
 }
