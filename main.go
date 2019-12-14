@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,7 +16,7 @@ func main() {
 	http.HandleFunc("/calendar", handleEmoji)
 
 	fmt.Println("Loaded")
-	http.ListenAndServe(":5997", nil)
+	log.Fatalln(http.ListenAndServe(":5997", nil))
 }
 
 func handleEmoji(w http.ResponseWriter, r *http.Request) {
