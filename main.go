@@ -36,10 +36,10 @@ func handleEmoji(w http.ResponseWriter, r *http.Request) {
 }
 
 func pos(n int, offset int) (x int, y int) {
-	x, y = 63, 22
+	x, y = 63, 21
 	pos := n + offset - 1
-	x += 5 * (pos % 7)
-	y += 3 * (pos / 7)
+	x += (pos % 7) * 5
+	y += (pos / 7) * 3
 	return
 }
 
