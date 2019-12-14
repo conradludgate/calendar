@@ -15,7 +15,7 @@ func main() {
 	http.HandleFunc("/calendar", handleEmoji)
 
 	fmt.Println("Loaded")
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":5997", nil)
 }
 
 func handleEmoji(w http.ResponseWriter, r *http.Request) {
